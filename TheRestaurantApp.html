@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Restaurant App</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f5f5f5;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+        }
+
+        #form {
+            max-width: 400px;
+            margin: 0 auto;
+        }
+
+        #form p {
+            font-weight: bold;
+            margin-bottom: 10px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+
+        input[type="number"],
+        input[type="text"],
+        select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            margin-bottom: 10px;
+        }
+
+        button {
+            background-color: #db9808;
+            color: #fff;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+
+       
+
+        #orders {
+            margin-top: 20px;
+            list-style-type: none;
+            padding: 0;
+        }
+
+        #orders li {
+            background-color: #fff;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+    </style>
+</head>
+
+<body>
+    <h1>Restaurant App</h1>
+
+    <div id="form">
+        <p>Add an order</p>
+        <label for="prize">Prize</label>
+        <input type="number" id="prize">
+        <label for="dish">Dish</label>
+        <input type="text" id="dish">
+        <label for="table">Table</label>
+        <select id="table">
+            <option value="1">Table 1</option>
+            <option value="2">Table 2</option>
+            <option value="3">Table 3</option>
+            <option value="4">Table 4</option>
+        </select>
+        <button id="submit">Add Order</button>
+        <div id="orders">
+
+
+        </div>
+    </div>
+    <script src="https://unpkg.com/axios/dist/axios.min.js"></script>
+    <script>
+        const apiUrl = "https://crudcrud.com/api/490ddb1fa5ac403182933d0d92bf8ea0/restaurant";
+        let orders = [];
+
+        function addBill(event) {
+            event.preventDefault();
+
+            const prize = prizeInput.value;
+            const dish = dishInput.value;
+            const table = tableInput.value;
+
+            axios.post(apiUrl, {
+                    prize,
+                    dish,
+                    table
+                })
+                .then(response => {
+                    const {
+                        _id
+                    } = response.data;
+                    orders.push({
+                        _id,
+                        prize,
+                        dish,
+                        table
+                    });
+                    displayOrders();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+
+            prizeInput.value = "";
+            dishInput.value = "";
+            tableInput.value = "1";
+        }
+
+        function deleteOrder(orderId) {
+            axios.delete(apiUrl + "/" + orderId)
+                .then(response => {
+                    
+                    orders = orders.filter(order => order._id !== orderId);
+                    displayOrders();
+                })
+                .catch(error => {
+                    console.log(error);
+                });
+        }
+
+        function displayOrders() {
+            ordersList.innerHTML = "";
+            orders.forEach(order => {
+                const {
+                    _id,
+                    prize,
+                    dish,
+                    table
+                } = order;
+                const orderItem = document.createElement("li");
+                orderItem.textContent = `Total: ${prize}₹, Dish: ${dish}, Table No. ${table}`;
+
+                const deleteButton = document.createElement("button");
+                deleteButton.textContent = "Delete";
+                deleteButton.addEventListener("click", () => {
+                    deleteOrder(_id);
+                });
+
+                orderItem.appendChild(deleteButton);
+                ordersList.appendChild(orderItem);
+            });
+        }
+
+        const ordersList = document.getElementById("orders");
+        const prizeInput = document.getElementById("prize");
+        const dishInput = document.getElementById("dish");
+        const tableInput = document.getElementById("table");
+        const submitButton = document.getElementById("submit");
+
+        submitButton.addEventListener("click", addBill);
+    </script>
+</body>
+
+</html>
